@@ -100,8 +100,8 @@
           const tbody = document.getElementById(tableBodyId);
           data.forEach((row, i) => {
             let icon = '';
-            if (row.favorite === 'true') icon = '⭐';
-            else if (row.recommended === 'true') icon = '👍';
+            if (row.favorite === 'TRUE') icon = '⭐';
+            else if (row.recommended === 'TRUE') icon = '👍';
 
             const tr = document.createElement('tr');
             tr.className = 'text-center hover:bg-gray-50';
