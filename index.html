@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-[#f5f5f0] text-black">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Dummiies Leaderboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body class="font-sans">
+
+  <!-- Header -->
+  <header class="bg-black py-4 flex justify-between items-center px-4">
+    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG-20240731-WA0002.jpg-AGaKMHweYYVsYwDXKjppVlPtzVI4aX.jpeg"
+         alt="The Dummiies Review"
+         class="h-20 w-20 rounded-full border-4 border-white object-cover">
+    <a href="https://www.instagram.com/thedummiiesreview/" target="_blank"
+       class="flex items-center gap-2 text-white hover:text-red-500 transition">
+      <!-- Instagram SVG icon -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+        <path d="M7.75 2H16.25C19.526 2 22 4.474 22 7.75V16.25C22 19.526 19.526 22 16.25 22H7.75C4.474 22 2 19.526 2 16.25V7.75C2 4.474 4.474 2 7.75 2ZM12 7A5 5 0 1 0 17 12A5 5 0 0 0 12 7ZM18.5 6.25A1.25 1.25 0 1 1 17.25 5A1.25 1.25 0 0 1 18.5 6.25Z"/>
+      </svg>
+      follow us
+    </a>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-6xl mx-auto py-10 px-4">
+    <h1 class="text-5xl font-extrabold text-center mb-4 text-red-600 tracking-tight">
+      🎬 The Dummiies Leaderboard
+    </h1>
+
+    <!-- Legend -->
+    <div class="max-w-md mx-auto flex justify-center gap-6 mb-8">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">⭐</span><span>Favorite</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xl">👍</span><span>Recommended</span>
+      </div>
+    </div>
+
+    <!-- Sort Controls -->
+    <div class="flex justify-center gap-4 mb-8">
+      <button onclick="setSort('score')" id="sortScore" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">By Rating</button>
+      <button onclick="setSort('popcorn')" id="sortPopcorn" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">By Popcorn %</button>
+      <button onclick="setSort('alpha')" id="sortAlpha" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">A–Z</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex justify-center mb-8">
+      <button id="moviesTab" class="px-4 py-2 rounded-full bg-red-600 text-white mr-2">Movies</button>
+      <button id="showsTab" class="px-4 py-2 rounded-full bg-blue-600 text-white">TV Shows</button>
+    </div>
+
+    <!-- Tables -->
+    <div id="moviesTable" class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-200">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="px-4 py-2">Rank</th>
+            <th class="px-4 py-2">Title</th>
+            <th class="px-4 py-2">Score</th>
+            <th class="px-4 py-2">Popcorn Meter</th>
+            <th class="px-4 py-2">Classification</th>
+            <th class="px-4 py-2">Full Review</th>
+          </tr>
+        </thead>
+        <tbody id="moviesBody"></tbody>
+      </table>
+    </div>
+
+    <div id="showsTable" class="overflow-x-auto hidden">
+      <table class="min-w-full bg-white border border-gray-200">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="px-4 py-2">Rank</th>
+            <th class="px-4 py-2">Title</th>
+            <th class="px-4 py-2">Score</th>
+            <th class="px-4 py-2">Popcorn Meter</th>
+            <th class="px-4 py-2">Classification</th>
+            <th class="px-4 py-2">Full Review</th>
+          </tr>
+        </thead>
+        <tbody id="showsBody"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const moviesTab = document.getElementById('moviesTab');
+    const showsTab = document.getElementById('showsTab');
+    const moviesTable = document.getElementById('moviesTable');
+    const showsTable = document.getElementById('showsTable');
+    let currentSort = 'score';
+
+    moviesTab.addEventListener('click', () => toggleTab('movies'));
+    showsTab.addEventListener('click', () => toggleTab('shows'));
+
+    function toggleTab(tab) {
+      if (tab === 'movies') {
+        moviesTable.classList.remove('hidden');
+        showsTable.classList.add('hidden');
+        moviesTab.classList.add('bg-red-600'); moviesTab.classList.remove('bg-gray-300');
+        showsTab.classList.remove('bg-blue-600'); showsTab.classList.add('bg-gray-300');
+      } else {
+        moviesTable.classList.add('hidden');
+        showsTable.classList.remove('hidden');
+        showsTab.classList.add('bg-blue-600'); showsTab.classList.remove('bg-gray-300');
+        moviesTab.classList.remove('bg-red-600'); moviesTab.classList.add('bg-gray-300');
+      }
+      refreshTables();
+    }
+
+    function setSort(mode) {
+      currentSort = mode;
+      document.querySelectorAll('[id^="sort"]').forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
+      document.getElementById('sort' + capitalize(mode)).classList.add('bg-blue-500', 'text-white');
+      refreshTables();
+    }
+
+    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    let movies = [], shows = [];
+
+    function loadTable(csvFile, arrayRef, tbodyId) {
+      Papa.parse(csvFile, {
+        download: true,
+        header: true,
+        complete: results => {
+          const data = results.data.filter(r => r.title);
+          data.forEach(r => {
+            r.score = parseFloat(r.score);
+            r.popcornScore = parseFloat(r.popcornScore);
+          });
+          console.log("Loaded rows:", data); // debug log
+          arrayRef.splice(0, arrayRef.length, ...data);
+          refreshTables();
+        }
+      });
+    }
+
+    function refreshTables() {
+      ['movies', 'shows'].forEach(type => {
+        const arr = type === 'movies' ? movies : shows;
+        const tbody = document.getElementById(type + 'Body');
+        tbody.innerHTML = '';
+        sortArray(arr);
+        arr.forEach((r, i) => {
+          const icon = r.favorite.toLowerCase() === 'true' ? '⭐' : (r.recommended.toLowerCase() === 'true' ? '👍' : '');
+          const tr = document.createElement('tr');
+          tr.className = 'text-center hover:bg-gray-50';
+          tr.innerHTML = `
+            <td class="py-2">${i+1}</td>
+            <td class="py-2">${r.title}</td>
+            <td class="py-2">${r.score.toFixed(1)}</td>
+            <td class="py-2"><a href="${r.popcornLink}" target="_blank" class="text-blue-600 hover:underline">${r.popcornScore}% 🍿</a></td>
+            <td class="py-2 text-xl">${icon}</td>
+            <td class="py-2"><a href="${r.link}" target="_blank" class="text-blue-600 hover:underline">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline fill-current text-blue-600" viewBox="0 0 24 24">
+                <path d="M7.75 2H16.25C19.526 2 22 4.474 22 7.75V16.25C22 19.526 19.526 22 16.25 22H7.75C4.474 22 2 19.526 2 16.25V7.75C2 4.474 4.474 2 7.75 2ZM12 7A5 5 0 1 0 17 12A5 5 0 0 0 12 7ZM18.5 6.25A1.25 1.25 0 1 1 17.25 5A1.25 1.25 0 0 1 18.5 6.25Z"/>
+              </svg>
+            </a></td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function sortArray(arr) {
+      arr.sort((a,b) => {
+        if (currentSort === 'alpha') {
+          return a.title.localeCompare(b.title);
+        } else if (currentSort === 'popcorn') {
+          return b.popcornScore - a.popcornScore || a.title.localeCompare(b.title);
+        } else {
+          return b.score - a.score || a.title.localeCompare(b.title);
+        }
+      });
+    }
+
+    loadTable('movies.csv', movies, 'moviesBody');
+    loadTable('shows.csv', shows, 'showsBody');
+    setSort('score');
+    toggleTab('movies');
+  </script>
+
+</body>
+</html>
