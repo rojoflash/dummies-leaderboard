@@ -125,11 +125,21 @@
 
     function loadTable(csvFile, arrayRef, tbodyId) {
       Papa.parse(csvFile, {
-        download: true,
-        header: true,
-        complete: results => {
-          const data = results.data.filter(r => r.title);
-          data.forEach(r => r.score = parseFloat(r.score), r.popcornScore = parseFloat(r.popcornScore));
+  download: true,
+  header: true,
+  complete: results => {
+    const data = results.data.filter(r => r.title);
+    data.forEach(r => {
+      r.score = parseFloat(r.score);
+      r.popcornScore = parseFloat(r.popcornScore);
+    });
+    console.log("Loaded rows:", data); // 👈 This helps debug
+    arrayRef.splice(0, arrayRef.length, ...data);
+    refreshTables();
+  }
+});
+
+
           arrayRef.splice(0, arrayRef.length, ...data);
           refreshTables();
         }
